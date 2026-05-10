@@ -36,27 +36,9 @@
 <h2>Game Board</h2>
 <div id="board"></div>
 
-<pre id="log"></pre>
-
-
 <!-- Leaderboard Modal Overlay -->
 <div id="leaderboardModal" class="modal hidden" onclick="hideLeaderboard()">
   <div class="modal-content" onclick="event.stopPropagation()">
-    <button class="modal-close" onclick="hideLeaderboard()">✕</button>
-
-    <h2>Leaderboard</h2>
-
-    <table id="leaderboard">
-      <thead>
-        <tr>
-          <th>Name</th>
-          <th>Wins</th>
-        </tr>
-      </thead>
-      <tbody>
-        <!-- populated by JS -->
-      </tbody>
-    </table>
   </div>
 </div>
 

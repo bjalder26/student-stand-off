@@ -26,18 +26,14 @@ ws.onopen = () => {
 ws.onmessage = (msg) => {
   const data = JSON.parse(msg.data);
 
-  console.log("STATE:", data);
-
-  // 👇 DEBUG VIEW
-  const log = document.getElementById("log");
-  if (log) {
-    log.textContent = JSON.stringify(data, null, 2);
-  }
-
-  // ✅ ONLY ONE MESSAGE TYPE
   if (data.type === "state") {
     state = data;
     render();
+  }
+
+  if (data.type === "noCorrectAnswers") {
+    showNoCorrectAnswersOverlay(msg.message);
+    return;
   }
 };
 
@@ -282,23 +278,34 @@ function getCourseIdFromURL() {
 }
 
 function populateLeaderboard(leaderboard) {
-  const tbody = document.querySelector("#leaderboard tbody");
-  tbody.innerHTML = "";
+  const modal = document.getElementById("leaderboardModal");
 
-  for (const player of leaderboard) {
-    const tr = document.createElement("tr");
+  modal.innerHTML = `
+    <div onclick="event.stopPropagation()">
+      <button class="modal-close" onclick="hideLeaderboard()">✕</button>
 
-    const nameTd = document.createElement("td");
-    nameTd.textContent = player.name;
+      <h2>Leaderboard</h2>
 
-    const winsTd = document.createElement("td");
-    winsTd.textContent = player.wins;
+      <table id="leaderboard">
+        <thead>
+          <tr>
+            <th>Name</th>
+            <th>Wins</th>
+          </tr>
+        </thead>
+        <tbody>
+          ${leaderboard.map(p => `
+            <tr>
+              <td>${p.name}</td>
+              <td>${p.wins}</td>
+            </tr>
+          `).join("")}
+        </tbody>
+      </table>
+    </div>
+  `;
 
-    tr.appendChild(nameTd);
-    tr.appendChild(winsTd);
-    tbody.appendChild(tr);
-  }
-  document.getElementById("leaderboardModal").classList.remove("hidden");
+  modal.classList.remove("hidden");
 }
 
 async function showLeaderboard() {
@@ -321,4 +328,24 @@ async function showLeaderboard() {
 
 function hideLeaderboard() {
   document.getElementById("leaderboardModal").classList.add("hidden");
+}
+
+function showNoCorrectAnswersOverlay(text) {
+  const modal = document.getElementById("leaderboardModal");
+
+  modal.innerHTML = `
+    <div onclick="event.stopPropagation()">
+      <button class="modal-close" onclick="hideLeaderboard()">✕</button>
+
+      <h2>Notice</h2>
+
+      <div style="text-align:center; font-size:18px; margin-top:10px;">
+        ❌ <strong>No one answered correctly</strong>
+        <br><br>
+        ${text || "You may discuss the question and decide how to continue."}
+      </div>
+    </div>
+  `;
+
+  modal.classList.remove("hidden");
 }

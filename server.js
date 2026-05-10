@@ -452,12 +452,47 @@ const rooms = {}; // courseId -> clients
 
     if (type === "finalize") {
       const correct = game.correctAnswer;
+
+      const activePlayers = Object.entries(game.players)
+        .filter(([_, p]) => !p.eliminated);
+
+      const correctIds = activePlayers
+        .filter(([_, p]) => p.answer != null && p.answer === correct)
+        .map(([id]) => id);
+
+      // ✅ CASE: NO ONE GOT IT RIGHT
+      if (correctIds.length === 0) {
+        // Reset per-round fields, but eliminate nobody
+        game.locked = false;
+        game.correctAnswer = null;
+
+        Object.values(game.players).forEach(p => {
+          p.answer = null;
+          p.lockedIn = false;
+        });
+
+        saveClass(courseId, cls);
+
+        // 🔔 Explicit notification event
+        broadcast(courseId, {
+          type: "noCorrectAnswers",
+          message: "No one answered correctly. Instructor may choose what to do next."
+        });
+
+        // Also broadcast refreshed state
+        broadcast(courseId, {
+          type: "state",
+          ...buildGameView(cls)
+        });
+
+        return;
+      }
+
+      // ✅ NORMAL CASE: eliminate incorrect players
       const eliminatedNow = [];
 
-      Object.entries(game.players).forEach(([id, p]) => {
-        if (p.eliminated) return;
-
-        if (p.answer == null || p.answer !== correct) {
+      activePlayers.forEach(([id, p]) => {
+        if (p.answer !== correct) {
           p.eliminated = true;
           eliminatedNow.push(id);
         }
@@ -473,10 +508,9 @@ const rooms = {}; // courseId -> clients
 
       saveClass(courseId, cls);
 
-      // ✅ Explicit animation event
       broadcast(courseId, {
         type: "state",
-        eliminatedIds: eliminatedNow,   // <-- exists ONLY here
+        eliminatedIds: eliminatedNow, // animation hook
         ...buildGameView(cls)
       });
 
