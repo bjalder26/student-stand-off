@@ -15,10 +15,12 @@ const app = express();
 const server = http.createServer(app);
 const wss = new WebSocket.Server({ server });
 let cachedRoster = null;
-const LTI_SECRET = process.env.LTI_SECRET;
 const LTI_KEY = process.env.LTI_KEY;
+const LTI_SECRET = process.env.LTI_SECRET;
+
 
 app.use(express.json());
+app.use(express.urlencoded({ extended: false })
 app.use(express.static('public'));
 app.use("/avatars", express.static(path.join(__dirname, "avatars")));
 
@@ -718,7 +720,7 @@ function saveClass(courseId, cls) {
 // START SERVER
 // ===============================
 
-const port = process.env.PORT || 3000;
+const port = process.env.PORT || 8080;
 
 server.listen(port, "0.0.0.0", () => {
   console.log(`Server listening on ${port}`);
