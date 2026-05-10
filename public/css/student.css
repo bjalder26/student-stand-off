@@ -1,0 +1,166 @@
+body {
+  font-family: Arial, sans-serif;
+  text-align: center;
+
+  /* ✅ FIXES */
+  background: #ffffff;   /* white page background */
+  color: #111111;        /* dark readable text */
+  margin: 0;
+  padding: 0;
+}
+
+#topBar {
+    padding: 10px;
+    background: #ffffff;
+    display: flex;
+    justify-content: space-between;
+}
+
+#board {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 10px;
+}
+
+.slot {
+  width: 110px;
+  border: 2px solid #ddd;
+  border-radius: 10px;
+  padding: 8px;
+  background: #ffffff;
+  text-align: center;
+  transition: 0.25s ease;
+}
+
+.slot img {
+  width: 80px;
+  height: 80px;
+  object-fit: contain;
+}
+
+.slot .name {
+  font-size: 16px;
+  font-weight: bold;
+  margin-top: 4px;
+}
+
+.slot .answer {
+  font-size: 16px;
+  margin-top: 4px;
+  font-weight: normal;
+}
+
+.slot.locked {
+  border-color: #f59e0b; /* orange */
+}
+
+.slot.eliminated {
+  opacity: 0.35;
+  filter: grayscale(100%);
+  background: #ffffff;
+  border-style: dashed;
+}
+
+.falling {
+  animation: fall 1s forwards;
+}
+
+@keyframes fallAndSpin {
+  from {
+    transform: translateY(0) rotate(0deg);
+    opacity: 1;
+  }
+  to {
+    transform: translateY(var(--fall-distance))
+               rotate(var(--spin-deg));
+    opacity: 0;
+  }
+}
+
+.slot.falling .avatar-wrapper {
+  animation: fallAndSpin var(--fall-duration) ease-in forwards;
+  pointer-events: none;
+}
+
+.slot.eliminated .avatar-wrapper {
+  display: none;
+}
+
+.hidden {
+  display: none;
+}
+
+.lock-status {
+  font-weight: bold;
+  font-size: 16px;
+
+  color: #92400e;              /* dark amber text */
+  background: #fef3c7;         /* light amber background */
+  border: 1px solid #f59e0b;   /* amber border */
+
+  padding: 8px 12px;
+  margin: 10px auto;
+  width: fit-content;
+
+  border-radius: 8px;
+  text-align: center;
+}
+
+.slot.me {
+  outline: 3px solid #2563eb;   /* blue ring */
+  background: #eff6ff;          /* subtle blue */
+}
+
+.slot.me .name {
+  font-weight: bold;
+}
+
+.slot.me.locked {
+  outline-color: #16a34a;       /* green = safe */
+}
+
+.answers button {
+  font-size: 18px;
+  font-weight: bold;
+  margin: 25px 5px;
+  padding: 20px 25px;
+  cursor: pointer;
+}
+
+.answers button.selected {
+  background-color: #2563eb;
+  color: white;
+  border-color: #1e40af;
+}
+
+@keyframes danceBounce {
+  0% {
+    transform: translateY(0)
+               rotate(calc(var(--dance-tilt) * -1));
+  }
+  50% {
+    transform: translateY(calc(var(--dance-bounce) * -1))
+               rotate(var(--dance-tilt));
+  }
+  100% {
+    transform: translateY(0)
+               rotate(calc(var(--dance-tilt) * -1));
+  }
+}
+
+.slot.winner .avatar-wrapper {
+  animation: danceBounce var(--dance-speed) ease-in-out infinite;
+  transform-origin: center;
+}
+
+#confettiCanvas {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  pointer-events: none;
+  z-index: 9999;
+  display: none;
+}

@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Instructor Control</title>
+  <link rel="stylesheet" href="/css/instructor.css" />
+</head>
+<body>
+
+<h1>Instructor Panel</h1>
+
+<div id="controls">
+  <button onclick="lock()">🔒 Lock</button>
+  <button onclick="unlock()">🔓 Unlock</button>
+  <button onclick="showLeaderboard()">🏆 Leaderboard</button>
+
+  <div class="answers">
+    <button onclick="setCorrect('A')">A</button>
+    <button onclick="setCorrect('B')">B</button>
+    <button onclick="setCorrect('C')">C</button>
+    <button onclick="setCorrect('D')">D</button>
+    <button onclick="setCorrect('E')">E</button>
+  </div>
+
+  <div id="answerStatus">❌ Correct answer not set</div>
+  <button id="finalizeBtn" onclick="finalize()" disabled>
+    ✅ Finalize Round
+  </button>
+
+  <button onclick="declareWinners()">🏆 End Game</button>
+  <button onclick="send('startNewGame')">
+  🔁 Reset / Start New Game
+</button>
+</div>
+
+<h2>Game Board</h2>
+<div id="board"></div>
+
+<pre id="log"></pre>
+
+
+<!-- Leaderboard Modal Overlay -->
+<div id="leaderboardModal" class="modal hidden" onclick="hideLeaderboard()">
+  <div class="modal-content" onclick="event.stopPropagation()">
+    <button class="modal-close" onclick="hideLeaderboard()">✕</button>
+
+    <h2>Leaderboard</h2>
+
+    <table id="leaderboard">
+      <thead>
+        <tr>
+          <th>Name</th>
+          <th>Wins</th>
+        </tr>
+      </thead>
+      <tbody>
+        <!-- populated by JS -->
+      </tbody>
+    </table>
+  </div>
+</div>
+
+<canvas id="confettiCanvas"></canvas>
+<script src="/js/instructor.js"></script>
+
+</body>
+</html>

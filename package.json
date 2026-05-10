@@ -1,0 +1,15 @@
+{
+  "name": "classroom-game",
+  "version": "1.0.0",
+  "description": "Gamified classroom response system",
+  "main": "app.js",
+  "scripts": {
+    "start": "node app.js"
+  },
+  "dependencies": {
+    "express": "^4.18.2",
+    "multer": "^1.4.5-lts.1",
+    "ws": "^8.16.0",
+    "oauth-1.0a": "^2.2.6"
+  }
+}

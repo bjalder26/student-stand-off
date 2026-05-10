@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Class Game Board</title>
+  <link rel="stylesheet" href="/css/student.css" />
+</head>
+
+<body>
+
+<div id="topBar">
+  <div>Class Game</div>
+  <div id="lockStatus" class="lock-status hidden">🔒 Answers Locked</div>
+  <div id="status">Connecting...</div>
+  <div class="avatar-upload">
+    <label>
+      Upload avatar:
+      <input
+        type="file"
+        accept="image/png,image/jpeg,image/webp"
+        onchange="uploadAvatar(this.files[0])"
+      />
+    </label>
+  </div>
+</div>
+
+<div class="answers">
+    <button data-answer="A" onclick="answer('A')">A</button>
+    <button data-answer="B" onclick="answer('B')">B</button>
+    <button data-answer="C" onclick="answer('C')">C</button>
+    <button data-answer="D" onclick="answer('D')">D</button>
+    <button data-answer="E" onclick="answer('E')">E</button>
+</div>
+
+<div id="board"></div>
+
+<canvas id="confettiCanvas"></canvas>
+<script src="/js/student.js"></script>
+</body>
+</html>
