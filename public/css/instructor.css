@@ -34,6 +34,7 @@ body {
 
 .slot {
   width: 110px;
+  height: 118px;
   border: 2px solid #ccc;
   border-radius: 10px;
   padding: 8px;
@@ -45,10 +46,9 @@ body {
   overflow: visible;
 }
 
-.slot img {
+img {
   width: 80px;
   height: 80px;
-  object-fit: contain;
 }
 
 .slot.locked {
@@ -124,8 +124,9 @@ body {
   }
 }
 
-.slot.falling .avatar-wrapper {
+.avatar-wrapper.falling {
   animation: fallAndSpin var(--fall-duration) ease-in forwards;
+  transform-origin: center;
   pointer-events: none;
 }
 
@@ -208,6 +209,17 @@ h2 {
 .hidden {
   display: none;
 }
+
+#animationLayer {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  pointer-events: none;
+  z-index: 900;
+}
+
   
 
 

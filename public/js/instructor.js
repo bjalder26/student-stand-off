@@ -167,6 +167,21 @@ function render() {
 // ===============================
 
 function animateElimination(eliminatedIds) {
+  // Ensure animation layer exists
+  let layer = document.getElementById("animationLayer");
+  if (!layer) {
+    layer = document.createElement("div");
+    layer.id = "animationLayer";
+    layer.style.position = "fixed";
+    layer.style.top = "0";
+    layer.style.left = "0";
+    layer.style.width = "100vw";
+    layer.style.height = "100vh";
+    layer.style.pointerEvents = "none";
+    layer.style.zIndex = "5000";
+    document.body.appendChild(layer);
+  }
+
   eliminatedIds.forEach(id => {
     const slot = document.querySelector(`.slot[data-id="${id}"]`);
     if (!slot) return;
@@ -174,22 +189,63 @@ function animateElimination(eliminatedIds) {
     const avatar = slot.querySelector(".avatar-wrapper");
     if (!avatar) return;
 
-    // Randomized fall settings (same as student)
+    // Measure avatar position BEFORE moving it
+    const rect = avatar.getBoundingClientRect();
+
+    // Lock visual size + position
+    avatar.style.position = "fixed";
+    avatar.style.left = `${rect.left}px`;
+    avatar.style.top = `${rect.top}px`;
+    avatar.style.width = `${rect.width}px`;
+    avatar.style.height = `${rect.height}px`;
+    avatar.style.margin = "0";
+    avatar.style.transform = "none";
+    avatar.style.transformOrigin = "center";
+
+    // Lift avatar above everything
+    layer.appendChild(avatar);
+
+    // Randomization
     const direction = Math.random() < 0.5 ? -1 : 1;
     const rotation = direction * (90 + Math.random() * 270);
     const fallDistance = 800;
     const duration = 1.8;
 
+    // Apply CSS variables
     avatar.style.setProperty("--spin-deg", `${rotation}deg`);
     avatar.style.setProperty("--fall-distance", `${fallDistance}px`);
     avatar.style.setProperty("--fall-duration", `${duration}s`);
 
-    slot.classList.add("falling");
+    // Trigger animation
+    avatar.classList.add("falling");
 
-    setTimeout(() => {
-      slot.classList.remove("falling");
+    // Cleanup (use both animationend AND timeout as safety)
+    const cleanup = () => {
+      avatar.removeEventListener("animationend", cleanup);
+
+      avatar.classList.remove("falling");
+
+      // Reset inline styles
+      avatar.style.position = "";
+      avatar.style.left = "";
+      avatar.style.top = "";
+      avatar.style.width = "";
+      avatar.style.height = "";
+      avatar.style.margin = "";
+      avatar.style.transform = "";
+      avatar.style.transformOrigin = "";
+
+      // Return avatar to slot
+      slot.prepend(avatar);
+
+      // Final visual state
       slot.classList.add("eliminated");
-    }, duration * 1000);
+    };
+
+    avatar.addEventListener("animationend", cleanup, { once: true });
+
+    // Fallback in case animationend doesn’t fire
+    setTimeout(cleanup, duration * 1000 + 50);
   });
 }
 
