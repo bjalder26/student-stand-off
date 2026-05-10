@@ -8,7 +8,7 @@ const fs = require('fs');
 const path = require('path');
 const multer = require('multer');
 const crypto = require("crypto");
-const OAuth = require("oauth-1.0a");
+const lti = require("ims-lti");
 const querystring = require("querystring");
 
 const app = express();
@@ -115,54 +115,37 @@ function loadClass(courseId) {
   }
 }
 
-
 app.post("/lti/launch", (req, res) => {
-  // 🔒 Verify OAuth 1.0 signature
-  const oauth = OAuth({
-    consumer: { key: LTI_KEY },
-    signature_method: "HMAC-SHA1",
-    hash_function(base, key) {
-      return crypto
-        .createHmac("sha1", key)
-        .update(base)
-        .digest("base64");
-    }
-  });
-
-  const requestData = {
-    url: `${req.protocol}://${req.get("host")}${req.originalUrl}`,
-    method: "POST",
-    data: req.body
-  };
-
-  const isValid = oauth.validateRequest(
-    requestData,
-    oauth.authorize(requestData),
-    { key: LTI_SECRET }
+  const provider = new lti.Provider(
+    process.env.LTI_KEY,
+    process.env.LTI_SECRET
   );
 
-  if (!isValid) {
-    return res.status(401).send("Invalid LTI launch");
-  }
+  provider.valid_request(req, (err, isValid) => {
+    if (!isValid) {
+      console.error("Invalid LTI launch:", err);
+      return res.status(401).send("Invalid LTI launch");
+    }
 
-  // ✅ Extract trusted values
-  const userId = req.body.user_id;
-  const fullName = req.body.lis_person_name_full;
-  const roles = req.body.roles;
-  const canvasCourseId = req.body.context_id;
-  const schoolId = req.body.tool_consumer_instance_guid;
+    // ✅ Trusted values from Canvas
+    const userId = req.body.user_id;
+    const fullName = req.body.lis_person_name_full;
+    const roles = req.body.roles;
+    const canvasCourseId = req.body.context_id;
+    const schoolId = req.body.tool_consumer_instance_guid;
 
-  const internalCourseId = `${schoolId}_${canvasCourseId}`;
+    const internalCourseId = `${schoolId}_${canvasCourseId}`;
 
-  // ✅ Redirect into your existing app
-  const redirectParams = querystring.stringify({
-    userId,
-    name: fullName,
-    role: roles,
-    courseId: internalCourseId
+    // ✅ Redirect into existing app
+    const params = new URLSearchParams({
+      userId,
+      name: fullName,
+      role: roles,
+      courseId: internalCourseId
+    });
+
+    res.redirect(`/launch?${params.toString()}`);
   });
-
-  res.redirect(`/launch?${redirectParams}`);
 });
 
 
