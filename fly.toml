@@ -21,3 +21,8 @@ primary_region = 'ord'
   cpu_kind = 'shared'
   cpus = 1
   memory_mb = 256
+
+
+[mounts]
+  source = "data_volume"
+  destination = "/data"

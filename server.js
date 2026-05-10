@@ -60,7 +60,7 @@ const upload = multer({
   }
 });
 
-const DATA_DIR = path.join(__dirname, 'data/classes');
+const DATA_DIR = process.env.DATA_DIR || "/data/classes";
 
 if (!fs.existsSync(DATA_DIR)) {
   fs.mkdirSync(DATA_DIR, { recursive: true });
