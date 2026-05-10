@@ -117,7 +117,7 @@ function loadClass(courseId) {
 app.post("/lti/launch", (req, res) => {
   // 🔒 Verify OAuth 1.0 signature
   const oauth = OAuth({
-    consumer: { key: process.env.LTI_KEY },
+    consumer: { key: LTI_KEY },
     signature_method: "HMAC-SHA1",
     hash_function(base, key) {
       return crypto
