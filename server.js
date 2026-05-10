@@ -15,6 +15,8 @@ const app = express();
 const server = http.createServer(app);
 const wss = new WebSocket.Server({ server });
 let cachedRoster = null;
+const LTI_SECRET = process.env.LTI_SECRET;
+const LTI_KEY = process.env.LTI_KEY;
 
 app.use(express.json());
 app.use(express.static('public'));
@@ -134,7 +136,7 @@ app.post("/lti/launch", (req, res) => {
   const isValid = oauth.validateRequest(
     requestData,
     oauth.authorize(requestData),
-    { key: process.env.LTI_SECRET }
+    { key: LTI_SECRET }
   );
 
   if (!isValid) {
