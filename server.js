@@ -22,6 +22,7 @@ const LTI_SECRET = process.env.LTI_SECRET;
 app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
 app.use(express.static('public'));
+app.set("trust proxy", true);
 app.use("/avatars", express.static(path.join(__dirname, "avatars")));
 
 process.on('uncaughtException', (err) => {
