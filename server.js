@@ -807,15 +807,22 @@ app.get('/editor', (req, res) => {
 
   fs.readFile(filePath, "utf8", (err, data) => {
     if (err) {
+      console.error(err);
       return res.status(404).send("Class file not found");
     }
+
+    // ✅ Escape JSON for safe HTML rendering
+    const safeData = data
+      .replace(/&/g, "&amp;")
+      .replace(/</g, "&lt;")
+      .replace(/>/g, "&gt;");
 
     res.send(`
       <html>
         <body style="font-family: sans-serif; padding: 20px;">
           <h2>Editing: ${courseId}</h2>
 
-          <textarea id="editor" style="width:100%; height:70vh;">${data}</textarea>
+          <textarea id="editor" style="width:100%; height:70vh;">${safeData}</textarea>
 
           <br/><br/>
           <button onclick="save()">Save</button>
@@ -825,7 +832,6 @@ app.get('/editor', (req, res) => {
             async function save() {
               const text = document.getElementById("editor").value;
 
-              // ✅ Validate JSON before sending
               try {
                 JSON.parse(text);
               } catch (e) {
