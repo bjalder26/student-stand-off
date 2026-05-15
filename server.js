@@ -18,6 +18,7 @@ let cachedRoster = null;
 const LTI_KEY = process.env.LTI_KEY;
 const LTI_SECRET = process.env.LTI_SECRET;
 
+const DATA_DIR = process.env.DATA_DIR || "/data/classes";
 
 app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
@@ -59,8 +60,6 @@ const upload = multer({
     }
   }
 });
-
-const DATA_DIR = process.env.DATA_DIR || "/data/classes";
 
 if (!fs.existsSync(DATA_DIR)) {
   fs.mkdirSync(DATA_DIR, { recursive: true });
@@ -803,7 +802,7 @@ app.get('/editor', (req, res) => {
     return res.status(400).send("Missing courseId");
   }
 
-  const filePath = path.join(CLASSES_DIR, `${courseId}.json`);
+  const filePath = path.join(DATA_DIR, `${courseId}.json`);
 
   fs.readFile(filePath, "utf8", (err, data) => {
     if (err) {
@@ -876,7 +875,7 @@ app.post('/editor-save', (req, res) => {
     return res.status(400).send("Invalid JSON");
   }
 
-  const filePath = path.join(CLASSES_DIR, `${courseId}.json`);
+  const filePath = path.join(DATA_DIR, `${courseId}.json`);
 
   fs.writeFile(filePath, JSON.stringify(parsed, null, 2), err => {
     if (err) {
