@@ -316,7 +316,9 @@ app.get('/launch', (req, res) => {
 
     saveClass(courseId, cls);
 
-    return res.sendFile(path.join(__dirname, 'public/student.html'));
+    return res.redirect(
+      `/student.html?courseId=${courseId}&userId=${userId}`
+    );
   }
 
   // ✅ INSTRUCTOR FLOW
@@ -336,7 +338,9 @@ app.get('/launch', (req, res) => {
     const cls = loadClass(courseId);
     saveClass(courseId, cls);
 
-    return res.sendFile(path.join(__dirname, 'public/instructor.html'));
+    return res.redirect(
+      `/instructor.html?courseId=${courseId}&userId=${req.query.userId}`
+    );  
   }
 
   // ✅ EXISTING: Only runs if MULTIPLE sections
