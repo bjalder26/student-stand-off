@@ -159,8 +159,7 @@ app.get("/api/classes/:className/leaderboard", (req, res) => {
   }
 
   const filePath = path.join(
-    __dirname,
-    "data",
+    "/data",
     "classes",
     `${className}.json`
   );
