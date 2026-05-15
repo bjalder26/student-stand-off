@@ -321,7 +321,13 @@ app.get('/launch', (req, res) => {
 
   // ✅ INSTRUCTOR FLOW
   const sectionIdsArr = sectionIds ? sectionIds.split(",") : [];
-  const sectionNamesArr = sectionNames ? sectionNames.split(",") : [];
+  let sectionNamesArr = [];
+
+  try {
+    sectionNamesArr = sectionNames ? JSON.parse(sectionNames) : [];
+  } catch (e) {
+    console.warn("Failed to parse sectionNames:", sectionNames);
+  }
 
   // ✅ NEW: If only one section → skip selector entirely
   if (sectionIdsArr.length === 1) {
