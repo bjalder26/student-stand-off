@@ -158,8 +158,10 @@ app.get("/api/classes/:className/leaderboard", (req, res) => {
     return res.status(400).json({ error: "Invalid class name" });
   }
 
+  const BASE_DATA_DIR = "/data";
+  
   const filePath = path.join(
-    "/data",
+    BASE_DATA_DIR,
     "classes",
     `${className}.json`
   );
@@ -793,6 +795,92 @@ function saveClass(courseId, cls) {
   fs.writeFileSync(file, JSON.stringify(cls, null, 2));
 }
 
+
+app.get('/editor', (req, res) => {
+  const { courseId } = req.query;
+
+  if (!courseId) {
+    return res.status(400).send("Missing courseId");
+  }
+
+  const filePath = path.join(CLASSES_DIR, `${courseId}.json`);
+
+  fs.readFile(filePath, "utf8", (err, data) => {
+    if (err) {
+      return res.status(404).send("Class file not found");
+    }
+
+    res.send(`
+      <html>
+        <body style="font-family: sans-serif; padding: 20px;">
+          <h2>Editing: ${courseId}</h2>
+
+          <textarea id="editor" style="width:100%; height:70vh;">${data}</textarea>
+
+          <br/><br/>
+          <button onclick="save()">Save</button>
+          <p id="status"></p>
+
+          <script>
+            async function save() {
+              const text = document.getElementById("editor").value;
+
+              // ✅ Validate JSON before sending
+              try {
+                JSON.parse(text);
+              } catch (e) {
+                document.getElementById("status").textContent = "❌ Invalid JSON";
+                return;
+              }
+
+              const res = await fetch("/editor-save", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({
+                  courseId: "${courseId}",
+                  data: text
+                })
+              });
+
+              if (res.ok) {
+                document.getElementById("status").textContent = "✅ Saved!";
+              } else {
+                document.getElementById("status").textContent = "❌ Save failed";
+              }
+            }
+          </script>
+        </body>
+      </html>
+    `);
+  });
+});
+
+app.post('/editor-save', (req, res) => {
+  const { courseId, data } = req.body;
+
+  if (!courseId || !data) {
+    return res.status(400).send("Missing data");
+  }
+
+  // ✅ Validate JSON again (never trust client)
+  let parsed;
+  try {
+    parsed = JSON.parse(data);
+  } catch (e) {
+    return res.status(400).send("Invalid JSON");
+  }
+
+  const filePath = path.join(CLASSES_DIR, `${courseId}.json`);
+
+  fs.writeFile(filePath, JSON.stringify(parsed, null, 2), err => {
+    if (err) {
+      console.error(err);
+      return res.status(500).send("Failed to save");
+    }
+
+    res.sendStatus(200);
+  });
+});
 
 // ===============================
 // START SERVER
