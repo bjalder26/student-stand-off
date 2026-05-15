@@ -135,9 +135,13 @@ app.post("/lti/launch", (req, res) => {
     const canvasCourseId = req.body.context_id;
     const schoolId = req.body.tool_consumer_instance_guid;
 
-    const internalCourseId = `${schoolId}_${canvasCourseId}`;
+    // ✅ NEW: Section handling
+    const sectionIds = req.body.custom_canvas_section_ids || "";
+    const primarySectionId = sectionIds.split(",")[0] || "no-section";
 
-    // ✅ Redirect into existing app
+    // ✅ Updated grouping key
+    const internalCourseId = `${schoolId}_${canvasCourseId}_${primarySectionId}`;
+
     const params = new URLSearchParams({
       userId,
       name: fullName,
@@ -148,7 +152,6 @@ app.post("/lti/launch", (req, res) => {
     res.redirect(`/launch?${params.toString()}`);
   });
 });
-
 
 app.get("/api/classes/:className/leaderboard", (req, res) => {
   const { className } = req.params;
