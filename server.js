@@ -128,25 +128,22 @@ app.post("/lti/launch", (req, res) => {
       return res.status(401).send("Invalid LTI launch");
     }
 
-    // ✅ Trusted values from Canvas
     const userId = req.body.user_id;
     const fullName = req.body.lis_person_name_full;
     const roles = req.body.roles;
     const canvasCourseId = req.body.context_id;
     const schoolId = req.body.tool_consumer_instance_guid;
 
-    // ✅ NEW: Section handling
     const sectionIds = req.body.custom_canvas_section_ids || "";
-    const primarySectionId = sectionIds.split(",")[0] || "no-section";
-
-    // ✅ Updated grouping key
-    const internalCourseId = `${schoolId}_${canvasCourseId}_${primarySectionId}`;
+    const sectionNames = req.body.custom_canvas_section_names || "";
 
     const params = new URLSearchParams({
       userId,
       name: fullName,
       role: roles,
-      courseId: internalCourseId
+      baseCourseId: `${schoolId}_${canvasCourseId}`,
+      sectionIds,
+      sectionNames
     });
 
     res.redirect(`/launch?${params.toString()}`);
@@ -290,28 +287,79 @@ function colorFromSeed(seed, offset) {
 // ===============================
 
 app.get('/launch', (req, res) => {
-  const { userId, name, role, courseId } = req.query;
+  const { userId, name, role, baseCourseId, sectionIds, sectionNames } = req.query;
 
-  const cls = loadClass(courseId);
+  const isInstructor =
+    role.includes("Instructor") || role.includes("Teacher");
 
-  if (role !== "Instructor" && !cls.students[userId]) {
-    if (!cls.game.players[userId]) {
-      cls.game.players[userId] = {
-        answer: null,
-        lockedIn: false,
-        eliminated: false
+  // ✅ STUDENT FLOW
+  if (!isInstructor) {
+    const sectionId = sectionIds?.split(",")[0] || "no-section";
+    const courseId = `${baseCourseId}_${sectionId}`;
+
+    const cls = loadClass(courseId);
+
+    if (!cls.students[userId]) {
+      if (!cls.game.players[userId]) {
+        cls.game.players[userId] = {
+          answer: null,
+          lockedIn: false,
+          eliminated: false
+        };
+      }
+      cls.students[userId] = {
+        name,
+        avatarSVG: generateAvatar(userId),
+        wins: 0
       };
     }
-    cls.students[userId] = {
-      name,
-      avatarSVG: generateAvatar(userId),
-      wins: 0
-    };
+
+    saveClass(courseId, cls);
+
+    return res.sendFile(path.join(__dirname, 'public/student.html'));
   }
 
+  // ✅ INSTRUCTOR FLOW
+  const sectionIdsArr = sectionIds ? sectionIds.split(",") : [];
+  const sectionNamesArr = sectionNames ? sectionNames.split(",") : [];
+
+  // ✅ NEW: If only one section → skip selector entirely
+  if (sectionIdsArr.length === 1) {
+    const courseId = `${baseCourseId}_${sectionIdsArr[0]}`;
+
+    const cls = loadClass(courseId);
+    saveClass(courseId, cls);
+
+    return res.sendFile(path.join(__dirname, 'public/instructor.html'));
+  }
+
+  // ✅ EXISTING: Only runs if MULTIPLE sections
+  return res.send(`
+    <html>
+      <body>
+        <h2>Select a Class Section</h2>
+        ${sectionIdsArr.map((id, i) => `
+          <form method="GET" action="/instructor">
+            <input type="hidden" name="userId" value="${userId}" />
+            <input type="hidden" name="name" value="${name}" />
+            <input type="hidden" name="courseId" value="${baseCourseId}_${id}" />
+            <button type="submit">
+              ${sectionNamesArr[i] || `Section ${id}`}
+            </button>
+          </form>
+        `).join("")}
+      </body>
+    </html>
+  `);
+});
+
+app.get('/instructor', (req, res) => {
+  const { courseId } = req.query;
+
+  const cls = loadClass(courseId);
   saveClass(courseId, cls);
 
-  res.sendFile(path.join(__dirname, role === 'Instructor' ? 'public/instructor.html' : 'public/student.html'));
+  res.sendFile(path.join(__dirname, 'public/instructor.html'));
 });
 
 // ===============================
