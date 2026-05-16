@@ -70,51 +70,6 @@ if (!fs.existsSync("avatars")) {
   fs.mkdirSync("avatars", { recursive: true });
 }
 
-function loadClass(courseId) {
-  const file = getClassFile(courseId);
-
-  try {
-    if (!fs.existsSync(file)) {
-      const cls = {
-        students: {},
-        game: createNewGame()
-      };
-      fs.writeFileSync(file, JSON.stringify(cls, null, 2));
-      return cls;
-    }
-
-    const raw = fs.readFileSync(file, "utf8");
-
-    if (!raw || raw.trim() === "") {
-      const cls = {
-        students: {},
-        game: createNewGame()
-      };
-      fs.writeFileSync(file, JSON.stringify(cls, null, 2));
-      return cls;
-    }
-
-    const cls = JSON.parse(raw);
-
-    cls.students ??= {};
-    cls.game ??= createNewGame();
-    cls.game.players ??= {};
-
-    return cls;
-
-  } catch (err) {
-    console.log("⚠️ Class file corrupted, repairing:", courseId);
-
-    const cls = {
-      students: {},
-      game: createNewGame()
-    };
-
-    fs.writeFileSync(file, JSON.stringify(cls, null, 2));
-    return cls;
-  }
-}
-
 app.post("/lti/launch", (req, res) => {
   const provider = new lti.Provider(
     process.env.LTI_KEY,
@@ -157,13 +112,7 @@ app.get("/api/classes/:className/leaderboard", (req, res) => {
     return res.status(400).json({ error: "Invalid class name" });
   }
 
-  const BASE_DATA_DIR = "/data";
-  
-  const filePath = path.join(
-    BASE_DATA_DIR,
-    "classes",
-    `${className}.json`
-  );
+  const filePath = path.join(DATA_DIR, `${className}.json`);
 
   fs.readFile(filePath, "utf8", (err, raw) => {
     if (err) {
